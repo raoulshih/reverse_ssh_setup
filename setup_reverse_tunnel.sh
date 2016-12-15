@@ -45,6 +45,22 @@ echo "#!/bin/sh
 # When this script runs it will allow you to ssh into this machine even if it is behind a firewall or has a NAT'd IP address. 
 # From any ssh capable machine you just type ssh -p $PORT_NUMBER $SUDO_USER@$MIDDLEMAN_SERVER
 
+# Not executing when lo (loop back) interface is up
+
+
+if [ "$IFACE" = lo  || "$IFACE" = "--all"]; then
+        exit 0
+fi
+
+if [ "$MODE" != start ]; then
+        exit 0
+fi
+
+if pgrep "autossh" > /dev/null
+then
+        exit 0
+fi
+
 # This is the username on your local server who has public key authentication setup at the middleman
 USER_TO_SSH_IN_AS=$MIDDLEMAN_USERNAME
 
