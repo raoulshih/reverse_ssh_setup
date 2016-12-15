@@ -59,7 +59,8 @@ AUTOSSH_PORT=$MONITORING_PORT_NUMBER
 
 # Ensures that autossh keeps trying to connect
 AUTOSSH_GATETIME=0
-su -c \"autossh -f -N -R *:\${PORT_MIDDLEMAN_WILL_LISTEN_ON}:localhost:22 \${MIDDLEMAN_SERVER_AND_USERNAME} -oLogLevel=error  -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no\" $SUDO_USER
+ssh-keyscan -p ${PORT_NUMBER} -H $MIDDLEMAN_SERVER >  /home/${SUDO_USER}/.ssh/known_hosts
+su -c "autossh -f -N -i /home/${SUDO_USER}/.ssh/id_rsa -R ${PORT_MIDDLEMAN_WILL_LISTEN_ON}:localhost:22 -p $PORT_NUMBER ${MIDDLEMAN_SERVER_AND_USERNAME} -oLogLevel=error  -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no" ${SUDO_USER}
 " > $SCRIPT_LOCATION
 
 echo "Making script executable"
