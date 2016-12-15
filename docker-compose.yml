@@ -14,7 +14,7 @@ services:
      # - "2210:1082"
     environment:
      # Change root password to a really strong one and copy it unchnaged to all containers
-     - ROOT_PASS="${SSH_ROOT_PASSWORD}"
+     - ROOT_PASS=${SSH_ROOT_PASSWORD}
   reversesshdestination:
     image: raoulshih/rpi-reverse-ssh-tunnel:0.0.1
     network_mode: "host"
