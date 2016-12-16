@@ -54,11 +54,19 @@ echo "#!/bin/sh
 # Not executing when lo (loop back) interface is up
 
 
+<<<<<<< HEAD
 if [ \"\$IFACE\" = lo  || \"\$IFACE\" = \"--all\"]; then
         exit 0
 fi
 
 if [ \"\$MODE\" != start ]; then
+=======
+if [ "$IFACE" = lo  || "$IFACE" = "--all"]; then
+        exit 0
+fi
+
+if [ "$MODE" != start ]; then
+>>>>>>> 0ad44a23fabbe0a924a14ca6f84cea3f98df7fd0
         exit 0
 fi
 

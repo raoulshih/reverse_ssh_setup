@@ -7,6 +7,11 @@ else
     export PUBLIC_HOST_PORT=$2
     export SSH_ROOT_PASSWORD=$3
     echo "Prepare to create ssh container CLIENT_ID={$CLIENT_ID}, HOST_PORT={$PUBLIC_HOST_PORT}, SSH_ROOT_PASS={$SSH_ROOT_PASSWORD}"
-    docker-compose up reversesshpublic
+    #docker-compose up -d reversesshpublic
+    docker run -d \
+      -e ROOT_PASS=$SSH_ROOT_PASSWORD \
+      -p $PUBLIC_HOST_PORT:22 \
+      --name=sshd_$CLIENT_ID \
+      raoulshih/rpi-reverse-ssh-tunnel:0.0.1
 fi
 
