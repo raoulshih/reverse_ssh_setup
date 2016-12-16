@@ -13,7 +13,7 @@ apt-get install openssh-server autossh
 
 #PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 10000 ]
 #MONITORING_PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 20000 ]
-MONITORING_PORT_NUMBER=3333
+MONITORING_PORT_NUMBER=1234
 read -p "Enter Port Number:" -e PORT_NUMBER
 
 echo "PORT_NUMBER: ${PORT_NUMBER}"
@@ -54,19 +54,11 @@ echo "#!/bin/sh
 # Not executing when lo (loop back) interface is up
 
 
-<<<<<<< HEAD
 if [ \"\$IFACE\" = lo  || \"\$IFACE\" = \"--all\"]; then
         exit 0
 fi
 
 if [ \"\$MODE\" != start ]; then
-=======
-if [ "$IFACE" = lo  || "$IFACE" = "--all"]; then
-        exit 0
-fi
-
-if [ "$MODE" != start ]; then
->>>>>>> 0ad44a23fabbe0a924a14ca6f84cea3f98df7fd0
         exit 0
 fi
 
