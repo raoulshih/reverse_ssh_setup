@@ -9,10 +9,12 @@ SCRIPT_LOCATION="/etc/network/if-up.d/reverse_ssh_tunnel"
 echo "Creating file in $SCRIPT_LOCATION"
 echo "Installing openssh-server and autossh"
 apt-get install openssh-server autossh
-echo "Randomly creating port numbers (edit these in the file to change if you want)"
+#echo "Randomly creating port numbers (edit these in the file to change if you want)"
 
-PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 10000 ]
-MONITORING_PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 20000 ]
+#PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 10000 ]
+#MONITORING_PORT_NUMBER=$[ ( $RANDOM % 10000 )  + 20000 ]
+MONITORING_PORT_NUMBER=3333
+read -p "Enter Port Number:" -e PORT_NUMBER
 
 echo "PORT_NUMBER: ${PORT_NUMBER}"
 echo "MONITORING_PORT_NUMBER: ${MONITORING_PORT_NUMBER}"
@@ -23,6 +25,10 @@ read MIDDLEMAN_USERNAME
 if [[ -z $MIDDLEMAN_USERNAME ]]; then
   MIDDLEMAN_USERNAME=$SUDO_USER
 fi
+
+#echo "Enter ssh port for the middleman server"
+read -p "Enter ssh port for the middleman server, Default is " -e -i 22 SSH_PORT
+
 echo "Checking to see if we can login using public key authentication: ssh $MIDDLEMAN_USERNAME@$MIDDLEMAN_SERVER (TODO, TO BE IMPLEMENTED!)"
 su $SUDO_USER -c "ssh $MIDDLEMAN_USERNAME@$MIDDLEMAN_SERVER \"echo I am in\""
 
@@ -33,7 +39,7 @@ echo "Do you want to upload your public key to the middleman and setup public ke
 read COPY_KEY
 
 if [ ! "${COPY_KEY}" = "n" ]; then
-  su $SUDO_USER -c "ssh-copy-id $MIDDLEMAN_USERNAME@$MIDDLEMAN_SERVER"
+  su $SUDO_USER -c "ssh-copy-id $MIDDLEMAN_USERNAME@$MIDDLEMAN_SERVER -p $SSH_PORT "
 fi
 
 echo "#!/bin/sh
@@ -45,6 +51,22 @@ echo "#!/bin/sh
 # When this script runs it will allow you to ssh into this machine even if it is behind a firewall or has a NAT'd IP address. 
 # From any ssh capable machine you just type ssh -p $PORT_NUMBER $SUDO_USER@$MIDDLEMAN_SERVER
 
+# Not executing when lo (loop back) interface is up
+
+
+if [ \"\$IFACE\" = lo  || \"\$IFACE\" = \"--all\"]; then
+        exit 0
+fi
+
+if [ \"\$MODE\" != start ]; then
+        exit 0
+fi
+
+if pgrep "autossh" > /dev/null
+then
+        exit 0
+fi
+
 # This is the username on your local server who has public key authentication setup at the middleman
 USER_TO_SSH_IN_AS=$MIDDLEMAN_USERNAME
 
@@ -52,15 +74,15 @@ USER_TO_SSH_IN_AS=$MIDDLEMAN_USERNAME
 MIDDLEMAN_SERVER_AND_USERNAME=$MIDDLEMAN_USERNAME@$MIDDLEMAN_SERVER
 
 # Port that the middleman will listen on (use this value as the -p argument when sshing)
-PORT_MIDDLEMAN_WILL_LISTEN_ON=$PORT_NUMBER
+PORT_MIDDLEMAN_WILL_LISTEN_ON=1234
 
 # Connection monitoring port, don't need to know this one
 AUTOSSH_PORT=$MONITORING_PORT_NUMBER
 
 # Ensures that autossh keeps trying to connect
 AUTOSSH_GATETIME=0
-ssh-keyscan -p ${PORT_NUMBER} -H $MIDDLEMAN_SERVER >  /home/${SUDO_USER}/.ssh/known_hosts
-su -c "autossh -f -N -i /home/${SUDO_USER}/.ssh/id_rsa -R ${PORT_MIDDLEMAN_WILL_LISTEN_ON}:localhost:22 -p $PORT_NUMBER ${MIDDLEMAN_SERVER_AND_USERNAME} -oLogLevel=error  -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no" ${SUDO_USER}
+ssh-keyscan -p $PORT_NUMBER -H $MIDDLEMAN_SERVER >  /home/$SUDO_USER/.ssh/known_hosts
+su -c \"autossh -f -N -i /home/$SUDO_USER/.ssh/id_rsa -R \${PORT_MIDDLEMAN_WILL_LISTEN_ON}:localhost:22 -p $PORT_NUMBER \${MIDDLEMAN_SERVER_AND_USERNAME} -oLogLevel=error  -oUserKnownHostsFile=/dev/null -oStrictHostKeyChecking=no\" $SUDO_USER
 " > $SCRIPT_LOCATION
 
 echo "Making script executable"
